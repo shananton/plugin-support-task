@@ -4,7 +4,6 @@ plugins {
 
 repositories {
     jcenter()
-    maven("https://kotlin.bintray.com/kotlin-dev1")
 }
 
 dependencies {
