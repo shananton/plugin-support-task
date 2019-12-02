@@ -4,6 +4,10 @@ import java.io.InputStream
 import java.io.OutputStream
 import kotlin.concurrent.thread
 
+interface BpmReaderPlugin : MusicPlugin {
+    var bpm : Double
+}
+
 class ConsoleControlsPlugin(override val musicAppInstance: MusicApp) : MusicPlugin {
     private lateinit var consoleThread: Thread
 
@@ -17,11 +21,17 @@ class ConsoleControlsPlugin(override val musicAppInstance: MusicApp) : MusicPlug
                 l: list playlists and tracks
                 g playlist_name n: play the playlist from position n
                 p: pause/play
+                m new_bpm: change the bmp of the metronome (0 to disable)
             Use 'exit' to quit
         """.trimIndent())
     }
 
+    private var metronomePlugin : BpmReaderPlugin? = null
+
     override fun init(persistedState: InputStream?) {
+        metronomePlugin = musicAppInstance.findSinglePlugin(
+            "com.shananton.metronome.plugin.MetronomePlugin") as? BpmReaderPlugin
+        println(metronomePlugin)
         consoleThread = thread(isDaemon = true) {
             while (!musicAppInstance.isClosed && !Thread.interrupted()) {
                 printPrompt()
@@ -65,6 +75,11 @@ class ConsoleControlsPlugin(override val musicAppInstance: MusicApp) : MusicPlug
                             is PlaybackState.Playing -> musicAppInstance.player.playbackState =
                                 PlaybackState.Paused(state.playlistPosition)
                         }
+                    }
+                    "m" -> run {
+                        val newBpm = parts.getOrNull(1)?.toDoubleOrNull() ?: return@run
+                        println(newBpm)
+                        metronomePlugin?.bpm = newBpm
                     }
                     else -> printHelp()
                 }
