@@ -9,7 +9,9 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib"))
     compileOnly(rootProject)
-//    implementation("plugin-support-hw.test")
+    testImplementation(rootProject.sourceSets.test.get().output)
+    testImplementation(rootProject)
+//    compileTestJava.dependsOn tasks.getByPath(":plugin-support-hw:testClasses")
     implementation("javazoom:jlayer:1.0.1")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")

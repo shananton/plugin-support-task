@@ -31,7 +31,6 @@ class ConsoleControlsPlugin(override val musicAppInstance: MusicApp) : MusicPlug
     override fun init(persistedState: InputStream?) {
         metronomePlugin = musicAppInstance.findSinglePlugin(
             "com.shananton.metronome.plugin.MetronomePlugin") as? BpmReaderPlugin
-        println(metronomePlugin)
         consoleThread = thread(isDaemon = true) {
             while (!musicAppInstance.isClosed && !Thread.interrupted()) {
                 printPrompt()
@@ -78,7 +77,7 @@ class ConsoleControlsPlugin(override val musicAppInstance: MusicApp) : MusicPlug
                     }
                     "m" -> run {
                         val newBpm = parts.getOrNull(1)?.toDoubleOrNull() ?: return@run
-                        println(newBpm)
+                        println("New metronome bpm = " + newBpm)
                         metronomePlugin?.bpm = newBpm
                     }
                     else -> printHelp()

@@ -13,9 +13,8 @@ open class MusicApp(
 ) : AutoCloseable {
     companion object {
         const val PERSISTED_STATE_SUFFIX = ".persist"
+        private fun persistFilename(plugin: MusicPlugin) = plugin.pluginId + PERSISTED_STATE_SUFFIX
     }
-
-    private fun persistFilename(plugin: MusicPlugin) = plugin.pluginId + PERSISTED_STATE_SUFFIX
 
     fun init() {
         plugins.forEach { plugin ->
@@ -48,8 +47,7 @@ open class MusicApp(
     }
 
     private val pluginClassLoader: ClassLoader = URLClassLoader(
-        pluginClasspath.map { it.toURI().toURL() }.toTypedArray(),
-        ClassLoader.getSystemClassLoader()
+        pluginClasspath.map { it.toURI().toURL() }.toTypedArray()
     )
 
     private val plugins: List<MusicPlugin> by lazy {
@@ -59,18 +57,22 @@ open class MusicApp(
             } catch (e: ClassNotFoundException) {
                 throw PluginClassNotFoundException(pluginName)
             }
-            pluginKClass.primaryConstructor?.let {
-                if (it.parameters.size == 1 && it.parameters[0].type == MusicApp::class.createType()) {
-                    return@map it.call(this) as MusicPlugin
+            pluginKClass.primaryConstructor?.let { constructor ->
+                if (constructor.parameters.size == 1 && constructor.parameters[0].type == MusicApp::class.createType()) {
+                    (constructor.call(this) as? MusicPlugin)?.let {
+                        return@map it
+                    }
                 }
             }
             pluginKClass.constructors.find { it.parameters.isEmpty() }?.let { constructor ->
                 (pluginKClass.memberProperties.find { it.name == "musicAppInstance" } as? KMutableProperty<*>)
                     ?.let { property ->
                         if (property.returnType == MusicApp::class.createType()) {
-                            return@map constructor.call().also {
+                            (constructor.call().also {
                                 property.setter.call(it, this)
-                            } as MusicPlugin
+                            } as? MusicPlugin)?.let {
+                                return@map it
+                            }
                         }
                     }
             }
@@ -79,12 +81,7 @@ open class MusicApp(
     }
 
     fun findSinglePlugin(pluginClassName: String): MusicPlugin? =
-        with(plugins.filter { it::class.qualifiedName == pluginClassName }) {
-            when (size) {
-                1 -> first()
-                else -> null
-            }
-        }
+        plugins.singleOrNull {it::class.qualifiedName == pluginClassName}
 
     fun <T : MusicPlugin> getPlugins(pluginClass: Class<T>): List<T> =
         plugins.filterIsInstance(pluginClass)

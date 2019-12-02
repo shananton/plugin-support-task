@@ -38,6 +38,7 @@ application {
                 from(projectDir.resolve("sounds")) {
                     include("beep-*.mp3")
                     include("sample-*.mp3")
+                    include("metronome.mp3")
                 }.into("sounds")
             }
         }

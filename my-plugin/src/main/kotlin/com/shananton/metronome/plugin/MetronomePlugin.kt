@@ -17,7 +17,7 @@ class MetronomePlugin(override val musicAppInstance: MusicApp) : BpmReaderPlugin
     public var globalEnabled: Boolean = false
 
     companion object {
-        const val MS_IN_MINUTE = 60 * 1000
+        private const val MS_IN_MINUTE = 60 * 1000
     }
 
     override var bpm: Double
@@ -36,7 +36,9 @@ class MetronomePlugin(override val musicAppInstance: MusicApp) : BpmReaderPlugin
         while (true) {
             if (enabled && globalEnabled) {
                 thread(isDaemon = true) {
-                    Player(File("sounds/metronome.mp3").inputStream()).play()
+                    File("sounds/metronome.mp3").inputStream().use {
+                        Player(it).play()
+                    }
                 }
                 Thread.sleep(intervalMs.toLong())
             }
