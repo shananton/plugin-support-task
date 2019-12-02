@@ -28,7 +28,7 @@ class PluginSupportTest {
         if (wipePersistedData) {
             app.wipePersistedPluginData()
         }
-        app.let {
+        app.use {
             it.init()
             it.doTest()
         }

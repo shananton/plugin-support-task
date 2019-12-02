@@ -8,6 +8,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation(kotlin("stdlib-jdk8"))
     compileOnly(rootProject)
     testImplementation(rootProject.sourceSets.test.get().output)
     testImplementation(rootProject)
